@@ -5,7 +5,11 @@ import java.util.*;
 import javax.swing.*;
 
 
-public class Paddle {
+public class Paddle extends  Rectangle {
+
+    int id; //для игрока 1 и игрока 2
+    int yVelocity; //скорость с которой двигается платформа
+
     public Paddle() {
     }
 

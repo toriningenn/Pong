@@ -37,7 +37,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void newBall() {
-
+        //мы хотим чтобы мяч начинал движение с середины экрана, передаём точные координаты конструктору
+       // ball = new Ball((GAME_WIDTH/2)-(BALL_DIAMETER/2),(GAME_HEIGHT/2)-(BALL_DIAMETER/2),BALL_DIAMETER,BALL_DIAMETER);
+        random = new Random();
+        ball = new Ball((GAME_WIDTH/2)-(BALL_DIAMETER/2),random.nextInt(GAME_HEIGHT-BALL_DIAMETER),BALL_DIAMETER,BALL_DIAMETER);
     }
 
     public void newPaddles() {
@@ -51,7 +54,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void paint(Graphics g) {
         image = createImage(getWidth(),getHeight());
         graphics = image.getGraphics();
-        draw(graphics);
+        draw(graphics); //!!!!передаём графику в draw, который лежит в этом классе, он передаёт ее
+        //методам draw остальных классов как параметр
         g.drawImage(image,0,0,this);
                 //в верхнем левом углу коррдинаты 0 0
         
@@ -60,6 +64,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void draw(Graphics g) {
         paddle1.draw(g);
         paddle2.draw(g);
+        ball.draw(g);
+        score.draw(g);
         Toolkit.getDefaultToolkit().sync(); //улучшает анимацию
     }
 
@@ -72,7 +78,40 @@ public class GamePanel extends JPanel implements Runnable {
 
 
     public void checkCollision() {
-//останавливает платформы по бокам экрана
+        //отбивает мяч от платформы
+        //метод класса rectangle
+        if (ball.intersects(paddle1)) {
+            ball.xVelocity = Math.abs(ball.xVelocity); //xVelocity негативная если мяч летит влево
+            ball.xVelocity++;//скорость повышается для сложности
+            if (ball.yVelocity > 0)
+                ball.yVelocity++; //если летит вниз то можно ускорить
+            else
+                ball.yVelocity--;
+
+            //летит вправо
+            ball.setXDirection(ball.xVelocity);
+            ball.setYDirection(ball.yVelocity);
+        }
+
+        if (ball.intersects(paddle2)) {
+            ball.xVelocity = Math.abs(ball.xVelocity); //xVelocity негативная если мяч летит влево
+            ball.xVelocity++;//скорость повышается для сложности
+            if (ball.yVelocity > 0)
+                ball.yVelocity++; //если летит вниз то можно ускорить
+            else
+                ball.yVelocity--;
+        //летит влево
+        ball.setXDirection(-ball.xVelocity);
+        ball.setYDirection(-ball.yVelocity);
+    }
+        //отскакивающий мяч
+        if (ball.y <=0) {
+            ball.setYDirection(-ball.yVelocity);
+        }
+        if(ball.y >= GAME_HEIGHT-BALL_DIAMETER) {
+            ball.setYDirection(-ball.yVelocity);
+        }
+        //останавливает платформы по бокам экранa
         //вверх
         if(paddle1.y<=0) {
             paddle1.y=0;
@@ -87,6 +126,20 @@ public class GamePanel extends JPanel implements Runnable {
         if(paddle2.y >=(GAME_HEIGHT-PADDLE_HEIGHT)) {
             paddle2.y=GAME_HEIGHT-PADDLE_HEIGHT;
         }
+
+        //даёт игроку балл и создаёт новый мяч и платформы
+        if(ball.x <=0) {
+            score.player2++;
+            newPaddles();
+            newBall();
+        }
+
+        if(ball.x >= GAME_WIDTH-BALL_DIAMETER) {
+            score.player1++;
+            newPaddles();
+            newBall();
+        }
+
     }
     public void run() {
         //game loop
